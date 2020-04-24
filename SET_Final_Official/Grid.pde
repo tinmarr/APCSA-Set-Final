@@ -54,24 +54,36 @@ public class Grid {
                               // You may wish to look up how the Location class decides
                               // how to compare two different locations.  Also look up the
                               // documentation on ArrayList to see how sort(null) works
-    if (cardsInPlay > 12){
-      currentCols--;
+    if (cardsInPlay > 12 || deck.size() == 0){
+      Card[] toRelocate = new Card[3];
       for (int i=0;i<3;i++){
-        cardsInPlay--;
-        Location temp = selectedLocs.get(i);
-        Card replacer = null;
-        for (int j=0; replacer != null; j++){
-          if (board[currentCols-1][j] != null){
-            replacer = board[currentCols-1][j];
-          }
+        if (!selectedCards.contains(board[currentCols-1][i])){
+          toRelocate[i] = board[currentCols-1][i];
         }
-        board[temp.getCol()][temp.getRow()] = replacer;
       }
-    } else {
+      for (int i=0;i<3;i++){
+        if (toRelocate[i] != null){
+          Location newLoc = null;
+          for (int j=0;newLoc == null;j++){
+           if (selectedCards.contains(board[selectedLocs.get(j).getCol()][selectedLocs.get(j).getRow()])){
+             newLoc = selectedLocs.get(j);
+           }
+          }
+          board[newLoc.getCol()][newLoc.getRow()] = toRelocate[i];
+        }
+      }
+      currentCols--;
+      cardsInPlay -= 3;
+    } else if (cardsInPlay > 3){
       for (int i=0;i<3;i++){
         Location temp = selectedLocs.get(i);
         board[temp.getCol()][temp.getRow()] = deck.deal();
       }
+    } else {
+      state = State.GAME_OVER;
+      runningTimerEnd = millis();
+      score += timerScore();
+      message = 7;
     }
   }
   
@@ -105,7 +117,9 @@ public class Grid {
     int cols = cardsInPlay / 3;
     for (int col = 0; col < cols; col++) {
       for (int row = 0; row < ROWS; row++) {
-        board[col][row].display(col, row);
+        try {
+          board[col][row].display(col, row);
+        } catch (NullPointerException e){}
       }
     }
   }
@@ -153,7 +167,7 @@ public class Grid {
   // Postconditions: board has been updated to include the card
   //                the number of cardsInPlay has been increased by one
   public void addCardToBoard(Card card) {
-    board[floor(cardsInPlay / 3)][cardsInPlay % ROWS] = card;
+    board[floor(cardsInPlay / ROWS)][cardsInPlay % ROWS] = card;
     cardsInPlay++;
   }
     

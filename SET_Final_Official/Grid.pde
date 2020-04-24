@@ -54,8 +54,25 @@ public class Grid {
                               // You may wish to look up how the Location class decides
                               // how to compare two different locations.  Also look up the
                               // documentation on ArrayList to see how sort(null) works
-
-    // YOU WRITE THIS
+    if (cardsInPlay > 12){
+      currentCols--;
+      for (int i=0;i<3;i++){
+        cardsInPlay--;
+        Location temp = selectedLocs.get(i);
+        Card replacer = null;
+        for (int j=0; replacer != null; j++){
+          if (board[currentCols-1][j] != null){
+            replacer = board[currentCols-1][j];
+          }
+        }
+        board[temp.getCol()][temp.getRow()] = replacer;
+      }
+    } else {
+      for (int i=0;i<3;i++){
+        Location temp = selectedLocs.get(i);
+        board[temp.getCol()][temp.getRow()] = deck.deal();
+      }
+    }
   }
   
   // Precondition: Three cards have been selected by the player
@@ -65,7 +82,10 @@ public class Grid {
       score += 10;
       removeSet();
       if (isGameOver()) {
-        // YOU WRITE THIS
+        state = State.GAME_OVER;
+        runningTimerEnd = millis();
+        score += timerScore();
+        message = 7;
       } else {
         state = State.PLAYING;
         message = 1;
@@ -133,19 +153,32 @@ public class Grid {
   // Postconditions: board has been updated to include the card
   //                the number of cardsInPlay has been increased by one
   public void addCardToBoard(Card card) {
-    // YOU WRITE THIS
+    board[floor(cardsInPlay / 3)][cardsInPlay % ROWS] = card;
+    cardsInPlay++;
   }
     
   public void addColumn() {
-    // YOU WRITE THIS
+    if (deck.size() == 0){
+      message = 5;
+    }
+    if (findSet().isEmpty()){
+      score += 5;
+      for (int i=0;i<3;i++){
+        addCardToBoard(deck.deal());
+      }
+      message = 3;
+      currentCols++;
+    } else {
+      score -= 5;
+      message = 4;
+    }
   }
 
   
   // GAME PROCEDURES
   
   public boolean isGameOver() {
-    // YOU WRITE THIS
-    return false;
+    return deck.size() == 0 && findSet().isEmpty();
   }
 
   public boolean tripleSelected() {
